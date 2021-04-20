@@ -1,0 +1,47 @@
+%% Problem Set 1: Question 5 %%
+
+clear;
+clc;
+
+N = 500;
+nreplic = 1000;
+rng(20210418);
+
+for T = [5 10 20];
+    
+beta_hat = zeros(nreplic,1);
+sigma_hat = zeros(nreplic,1);
+sigma_tilde = zeros(nreplic,1);
+
+for n = 1:nreplic;
+    
+    x = randn(T,N);
+    e = abs(x).*randn(T,N);
+    y = x + e;
+    
+    y = y - repmat(mean(y),T,1);
+    x = x - repmat(mean(x),T,1); % average across T
+    
+    yy = y';  % N x T
+    xx = x';  % N x T
+    
+    xx = xx(:); % vectorize x' 
+    yy = yy(:); % vectorize y'
+    
+    beta_hat(n) = xx\yy;  %fixed effects estimator: solution(=b) to xx*b=yy
+    e_hat = y - x*beta_hat(n);  % residual from fixed effect regression
+                                % T x N
+                           
+    sigma_hat(n) = sqrt( (xx'*xx)^(-2)*sum(sum(x.*e_hat).^2) );
+    sigma_tilde(n) = sqrt( (xx'*xx)^(-2)*sum(sum ((x.^2).*(e_hat.^2))) );
+    
+end
+
+[ std(beta_hat), mean(sigma_hat)-std(beta_hat), mean(sigma_tilde)-std(beta_hat), ...
+  std(sigma_hat), std(sigma_tilde), ...
+  sqrt((mean(sigma_hat)-std(beta_hat))^2+var(sigma_hat)), ...
+  sqrt((mean(sigma_tilde)-std(beta_hat))^2+var(sigma_tilde)),...
+  sqrt((mean(sigma_tilde)-std(beta_hat))^2+var(sigma_tilde)) / sqrt((mean(sigma_hat)-std(beta_hat))^2+var(sigma_hat)) ]
+
+end    
+
