@@ -1,0 +1,64 @@
+clear
+set more off
+set matsize 300
+capture log close
+
+cd "D:\UCSD\1st\Spring\metrics\PS1"
+log using shall.log, replace
+use handguns.dta, replace
+
+desc
+summarize
+
+gen log_vio=log(vio)
+gen log_mur=log(mur)
+gen log_rob=log(rob)
+
+
+/****** Question 1 *******/
+reg log_vio shall, r
+outreg2 using "q6_1.xls", replace
+
+reg log_mur shall, r
+outreg2 using "q6_1.xls", append
+
+reg log_rob shall, r
+outreg2 using "q6_1.xls", append
+
+
+/****** Question 2 *******/
+reg log_vio shall incarc_rate density pop pm1029 avginc, r
+outreg2 using "q6_2.xls", replace
+
+reg log_mur shall incarc_rate density pop pm1029 avginc, r
+outreg2 using "q6_2.xls", append
+
+reg log_rob shall incarc_rate density pop pm1029 avginc, r
+outreg2 using "q6_2.xls", append
+
+
+/****** Question 4 *******/
+tab state, gen(statedummy)
+tab year, gen(yeardummy)
+
+foreach v in vio mur rob {
+
+reg log_`v' shall incarc_rate density pop pm1029 avginc, r
+outreg2 using "q6_4`v'.xls", replace
+
+reg log_`v' shall incarc_rate density pop pm1029 avginc statedummy*, r
+testparm statedummy*
+outreg2 using "q6_4`v'.xls", append
+
+reg log_`v' shall incarc_rate density pop pm1029 avginc statedummy* yeardummy*, r
+testparm statedummy*
+testparm yeardummy*
+outreg2 using "q6_4`v'.xls", append
+
+reg log_`v' shall incarc_rate density pop pm1029 avginc statedummy* yeardummy*, ///
+cluster(state) r
+outreg2 using "q6_4`v'.xls", append
+
+}
+
+log close
